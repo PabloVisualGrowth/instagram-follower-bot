@@ -3,6 +3,7 @@ __pycache__/
 *.png
 *.html
 *.json
+!vercel.json
 venv/
 .venv/
 node_modules/

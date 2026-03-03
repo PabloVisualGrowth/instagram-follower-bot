@@ -1,0 +1,27 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "api/index.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "frontend/**",
+            "use": "@vercel/static"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/(style.css|app.js)",
+            "destination": "/frontend/$1"
+        },
+        {
+            "source": "/run-bot",
+            "destination": "/api/index.py"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/api/index.py"
+        }
+    ]
+}
