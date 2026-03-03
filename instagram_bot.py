@@ -17,6 +17,9 @@ load_dotenv()
 USERNAME = os.getenv("IG_USERNAME")
 PASSWORD = os.getenv("IG_PASSWORD")
 
+if not USERNAME or not PASSWORD:
+    raise ValueError("Faltan las variables de entorno IG_USERNAME o IG_PASSWORD.")
+
 STEALTH_JS = '''
 (() => {
     delete Object.getPrototypeOf(navigator).webdriver;
