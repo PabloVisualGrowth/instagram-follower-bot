@@ -1,14 +1,22 @@
+# Credentials and secrets
 .env
+
+# Python
 __pycache__/
-*.png
-# Ignore temporary logs and data
-*.json
-*.html
-# Whitelist critical files
-!index.html
-!vercel.json
-!followers.json
+*.py[cod]
+*.egg
+*.egg-info/
 venv/
 .venv/
-node_modules/
-.DS_Store
+
+# Bot data
+followers.json
+
+# Screenshots
+*.png
+
+# Debug HTML
+*.html
+
+# Chrome driver
+chromedriver*

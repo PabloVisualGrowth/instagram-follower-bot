@@ -1,7 +1,6 @@
 import os
 import time
 import json
-import requests
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -41,8 +40,6 @@ def setup_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-notifications")
     options.add_argument("--lang=es-ES")
-    options.add_argument("--headless=new") # Required for cloud
-    options.add_argument("--window-size=1920,1080")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     
@@ -281,20 +278,6 @@ def save_and_compare(new_followers_list):
         
     return results
 
-def send_to_n8n(data):
-    """Sends the result data to the n8n webhook."""
-    webhook_url = os.getenv("N8N_WEBHOOK_URL")
-    if not webhook_url:
-        print("Aviso: N8N_WEBHOOK_URL no definida en .env")
-        return
-    
-    try:
-        print(f"Enviando datos a n8n: {webhook_url}...")
-        response = requests.post(webhook_url, json=data)
-        print(f"Respuesta de n8n: {response.status_code}")
-    except Exception as e:
-        print(f"Error enviando a n8n: {e}")
-
 def run_bot():
     """Main function to run the bot and return results."""
     driver = setup_driver()
@@ -302,18 +285,12 @@ def run_bot():
         login(driver)
         f_list = get_followers(driver)
         results = save_and_compare(f_list)
-        
-        output = {
+        driver.save_screenshot("ultimo_scrappeo.png")
+        return {
             "success": True,
             "followers": f_list,
             "changes": results
         }
-        
-        # EL PASO CRITICO: Enviar a n8n
-        send_to_n8n(output)
-        
-        driver.save_screenshot("ultimo_scrappeo.png")
-        return output
     except Exception as e:
         print(f"Error: {e}")
         driver.save_screenshot("error_scrappeo.png")

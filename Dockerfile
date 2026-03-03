@@ -1,35 +1,53 @@
-# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Install system dependencies for Chrome/Selenium
+# Install Chrome dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     unzip \
     curl \
-    --no-install-recommends
-
-# Install Google Chrome
-RUN curl -fSsL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor | tee /usr/share/keyrings/google-chrome.gpg > /dev/null \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && apt-get clean \
+    xvfb \
+    libnss3 \
+    libxss1 \
+    libgconf-2-4 \
+    libfontconfig1 \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libgdk-pixbuf2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libpango-1.0-0 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Install Google Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
 COPY . .
 
-# Expose the port (Railway/Render/Easypanel use PORT env var)
+# Create data directory for persistent storage
+RUN mkdir -p /app/data
+
 EXPOSE 5001
 
-# Command to run the application
-# We use gunicorn with dynamic port binding
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5001} server:app"]
+CMD ["python", "server.py"]
