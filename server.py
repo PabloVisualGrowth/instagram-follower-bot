@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 from instagram_bot import run_bot
 
-app = Flask(__name__, static_folder="static", template_folder=".")
+app = Flask(__name__, template_folder=".")
 CORS(app)
 
 @app.route("/")
