@@ -35,6 +35,7 @@ STEALTH_JS = '''
 def setup_driver():
     options = Options()
     # Stealth arguments
+    options.add_argument("--headless=new") # Required for Docker/EasyPanel (no screen)
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--disable-infobars")
     options.add_argument("--no-sandbox")
