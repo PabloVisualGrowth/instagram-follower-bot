@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import requests
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -286,11 +287,35 @@ def run_bot():
         f_list = get_followers(driver)
         results = save_and_compare(f_list)
         driver.save_screenshot("ultimo_scrappeo.png")
-        return {
+
+        payload = {
             "success": True,
             "followers": f_list,
             "changes": results
         }
+        
+        # N8N Integration: Send results via webhook if configured
+        webhook_url = os.getenv("N8N_WEBHOOK_URL")
+        if webhook_url:
+            try:
+                print(f"Enviando resultados a n8n: {webhook_url}")
+                webhook_payload = {
+                    "username": USERNAME,
+                    "followers_count": len(f_list),
+                    "new_followers": results["new_followers"],
+                    "unfollowers": results["unfollowers"],
+                    "first_run": results["first_run"],
+                    "timestamp": time.time()
+                }
+                response = requests.post(webhook_url, json=webhook_payload, timeout=10)
+                print(f"Respuesta webhook n8n: {response.status_code}")
+                # Optional: Add webhook status to payload for frontend validation
+                payload["n8n_webhook_status"] = response.status_code
+            except Exception as webhook_err:
+                print(f"Error al enviar webhook a n8n: {webhook_err}")
+                payload["n8n_webhook_error"] = str(webhook_err)
+
+        return payload
     except Exception as e:
         print(f"Error: {e}")
         driver.save_screenshot("error_scrappeo.png")

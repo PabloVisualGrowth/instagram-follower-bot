@@ -1,0 +1,149 @@
+{
+    "name": "Instagram Follower Bot Tracker",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "days",
+                            "triggerAtHour": 10
+                        }
+                    ]
+                }
+            },
+            "id": "e4ed1d65-4f32-4e4b-a25e-8bea7ba9fdc4",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                220,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/run-bot",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 300000
+                }
+            },
+            "id": "18856277-28d1-4328-98e8-78229c7820bb",
+            "name": "Trigger Python Bot",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                460,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a",
+                "options": {}
+            },
+            "id": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a",
+            "name": "Webhook (Receive Data)",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                220,
+                480
+            ],
+            "webhookId": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a"
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "body.new_followers",
+                "options": {}
+            },
+            "id": "item-list-split",
+            "name": "Split New Followers",
+            "type": "n8n-nodes-base.itemLists",
+            "typeVersion": 3,
+            "position": [
+                460,
+                480
+            ]
+        },
+        {
+            "parameters": {
+                "authentication": "nocoDbApiToken",
+                "operation": "create",
+                "projectId": "pi9kk3cdfb014m2",
+                "table": "m9o8vil7b4bsfhy",
+                "columns": "username,type",
+                "data": {
+                    "username": "={{ $json.body.new_followers }}",
+                    "type": "new_follower"
+                }
+            },
+            "id": "801fab75-4e78-4ce9-9b1a-ee6cd849ebb3",
+            "name": "NocoDB (Nuevos)",
+            "type": "n8n-nodes-base.nocoDb",
+            "typeVersion": 3,
+            "position": [
+                700,
+                480
+            ],
+            "credentials": {
+                "nocoDbApiToken": {
+                    "id": "ixC19fw9lmi0MG9X",
+                    "name": "NocoDB Esencia Paradise"
+                }
+            }
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Trigger Python Bot",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Webhook (Receive Data)": {
+            "main": [
+                [
+                    {
+                        "node": "Split New Followers",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split New Followers": {
+            "main": [
+                [
+                    {
+                        "node": "NocoDB (Nuevos)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "f0ad0fa9-1e24-42b7-baec-2c13d9a56e79"
+}
