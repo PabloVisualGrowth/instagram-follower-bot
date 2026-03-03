@@ -25,5 +25,5 @@ if __name__ == "__main__":
     if not os.path.exists("frontend"):
         os.makedirs("frontend")
     
-    print("Servidor iniciado en http://localhost:5001")
-    app.run(debug=True, port=5001)
+    print("Servidor iniciado en http://0.0.0.0:5001")
+    app.run(host="0.0.0.0", debug=False, port=5001)
