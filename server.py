@@ -1,14 +1,14 @@
-from flask import Flask, jsonify, render_template, send_from_directory
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import traceback
 
-app = Flask(__name__, static_folder="frontend", template_folder="frontend")
+app = Flask(__name__, static_folder="static")
 CORS(app)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return send_from_directory("static", "index.html")
 
 @app.route("/run-bot", methods=["POST"])
 def execute_bot():
@@ -27,9 +27,7 @@ def get_screenshot(filename):
     return send_from_directory(".", filename)
 
 if __name__ == "__main__":
-    if not os.path.exists("frontend"):
-        os.makedirs("frontend")
-    
+    os.makedirs("static", exist_ok=True)
     port = int(os.environ.get("PORT", 8080))
     print(f"Servidor iniciado en http://0.0.0.0:{port}")
     app.run(host="0.0.0.0", debug=False, port=port)

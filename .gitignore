@@ -15,8 +15,9 @@ followers.json
 # Screenshots
 *.png
 
-# Debug HTML
-*.html
+# Debug HTML (Selenium dumps, NOT the frontend)
+ig_login_debug.html
+modal_dump.html
 
 # Chrome driver
 chromedriver*
