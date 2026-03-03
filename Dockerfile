@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Install Chrome dependencies
+# Install Chrome dependencies (compatible with Debian trixie)
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -9,16 +9,14 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     libnss3 \
     libxss1 \
-    libgconf-2-4 \
     libfontconfig1 \
     fonts-liberation \
-    libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcairo2 \
     libcups2 \
     libdbus-1-3 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-xlib-2.0-0 \
     libgtk-3-0 \
     libnspr4 \
     libpango-1.0-0 \
