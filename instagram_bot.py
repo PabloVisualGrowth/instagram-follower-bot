@@ -46,11 +46,19 @@ def get_followers_instagrapi():
             cl.dump_settings(session_file)
             print("[Instagrapi] Login exitoso. Sesión guardada.")
         except BadPassword:
-            raise Exception("Contraseña incorrecta para Instagram. Verifica INSTAGRAM_PASSWORD.")
+            raise Exception(
+                "Instagram rechazó el login desde este servidor (IP de datacenter). "
+                "Solución: ejecuta 'python generate_session_local.py' en tu PC local y "
+                "sube el archivo ig_session.json a EasyPanel (Storage > Files > /app/ig_session.json)."
+            )
         except ChallengeRequired:
-            raise Exception("Instagram exige verificación (challenge). Prueba a iniciar sesión manualmente una vez desde la app oficial.")
+            raise Exception(
+                "Instagram pide verificación (2FA/SMS). "
+                "Ejecuta 'python generate_session_local.py' en tu PC para crear una sesión confiable "
+                "y súbela a EasyPanel en /app/ig_session.json."
+            )
         except PleaseWaitFewMinutes:
-            raise Exception("Instagram ha bloqueado temporalmente el login. Espera unos minutos.")
+            raise Exception("Instagram ha limitado los intentos de login. Espera unos minutos y vuelve a intentarlo.")
 
     # Get our own user ID
     user_id = cl.user_id_from_username(USERNAME)
