@@ -66,7 +66,8 @@ def get_followers_instagrapi():
 
     # Get followers
     print("[Instagrapi] Obteniendo seguidores (esto puede tardar)...")
-    followers_raw = cl.user_followers(user_id, amount=0)  # 0 = all followers
+    # use_cache=False bypasses instagrapi's internal cache and forces a fresh request
+    followers_raw = cl.user_followers(user_id, amount=0, use_cache=False)  
     followers = sorted([user.username for user in followers_raw.values()])
 
     print(f"[Instagrapi] Se han encontrado {len(followers)} seguidores.")
