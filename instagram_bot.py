@@ -130,6 +130,16 @@ def run_bot():
         f_list = get_followers_instagrapi()
         results = save_and_compare(f_list)
 
+        # === AUTO DM NEW FOLLOWERS ===
+        if not results.get("first_run") and len(results.get("new_followers", [])) > 0:
+            print(f"[Bot] Detectados {len(results['new_followers'])} nuevos seguidores. Iniciando auto-DM...")
+            try:
+                from dm_bot import run_dm_bot
+                run_dm_bot(results["new_followers"])
+            except Exception as dm_err:
+                print(f"[ERROR] Auto-DM falló: {dm_err}")
+                results["dm_error"] = str(dm_err)
+
         payload = {
             "success": True,
             "followers": f_list,

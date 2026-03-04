@@ -1,5 +1,5 @@
 {
-    "name": "Instagram Bot — Tracker + DM Bienvenida",
+    "name": "Instagram Bot — Tracker",
     "nodes": [
         {
             "parameters": {
@@ -120,28 +120,6 @@
         },
         {
             "parameters": {
-                "method": "POST",
-                "url": "http://instagram_bot:8080/send-dms",
-                "sendBody": true,
-                "contentType": "json",
-                "body": {
-                    "username": "={{ $json.username }}"
-                },
-                "options": {
-                    "timeout": 120000
-                }
-            },
-            "id": "enviar-dm",
-            "name": "Enviar DM Bienvenida",
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.1,
-            "position": [
-                1440,
-                300
-            ]
-        },
-        {
-            "parameters": {
                 "authentication": "nocoDbApiToken",
                 "operation": "create",
                 "projectId": "pi9kk3cdfb014m2",
@@ -238,17 +216,6 @@
                 [
                     {
                         "node": "Guardar Unfollower en NocoDB",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Guardar en NocoDB": {
-            "main": [
-                [
-                    {
-                        "node": "Enviar DM Bienvenida",
                         "type": "main",
                         "index": 0
                     }
