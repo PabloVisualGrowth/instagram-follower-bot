@@ -24,7 +24,7 @@
         {
             "parameters": {
                 "method": "POST",
-                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/run-bot",
+                "url": "http://instagram_bot:8080/run-bot",
                 "options": {
                     "timeout": 300000
                 }
@@ -121,7 +121,7 @@
         {
             "parameters": {
                 "method": "POST",
-                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/send-dms",
+                "url": "http://instagram_bot:8080/send-dms",
                 "sendBody": true,
                 "contentType": "json",
                 "body": {
@@ -179,7 +179,7 @@
         {
             "parameters": {
                 "method": "POST",
-                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/reset-followers",
+                "url": "http://instagram_bot:8080/reset-followers",
                 "options": {}
             },
             "id": "reset-memoria",
