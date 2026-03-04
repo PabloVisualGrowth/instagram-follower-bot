@@ -14,11 +14,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Load credentials
 load_dotenv()
-USERNAME = os.getenv("IG_USERNAME")
-PASSWORD = os.getenv("IG_PASSWORD")
-
-if not USERNAME or not PASSWORD:
-    raise ValueError("Faltan las variables de entorno IG_USERNAME o IG_PASSWORD.")
+# Support both naming conventions (INSTAGRAM_USERNAME and IG_USERNAME)
+USERNAME = os.getenv("INSTAGRAM_USERNAME") or os.getenv("IG_USERNAME")
+PASSWORD = os.getenv("INSTAGRAM_PASSWORD") or os.getenv("IG_PASSWORD")
 
 STEALTH_JS = '''
 (() => {
