@@ -125,9 +125,7 @@
                 "sendBody": true,
                 "contentType": "json",
                 "body": {
-                    "usernames": [
-                        "={{ $json.username }}"
-                    ]
+                    "username": "={{ $json.username }}"
                 },
                 "options": {
                     "timeout": 120000
