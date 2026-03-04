@@ -1,5 +1,5 @@
 {
-    "name": "Instagram Follower Bot Tracker",
+    "name": "Instagram Bot — Tracker + DM Bienvenida",
     "nodes": [
         {
             "parameters": {
@@ -12,13 +12,13 @@
                     ]
                 }
             },
-            "id": "schedule-1",
+            "id": "schedule-trigger",
             "name": "Schedule Trigger",
             "type": "n8n-nodes-base.scheduleTrigger",
             "typeVersion": 1.1,
             "position": [
                 240,
-                300
+                400
             ]
         },
         {
@@ -29,26 +29,26 @@
                     "timeout": 300000
                 }
             },
-            "id": "http-1",
+            "id": "ejecutar-bot",
             "name": "Ejecutar Bot",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.1,
             "position": [
                 480,
-                300
+                400
             ]
         },
         {
             "parameters": {
-                "jsCode": "// El bot ya calculó los cambios. Solo los separamos en items individuales.\nconst data = $input.first().json;\n\nif (!data.success) {\n  return [{ json: { skipped: true, error: data.error } }];\n}\n\nconst newFollowers = (data.changes?.new_followers || []).map(username => ({\n  username,\n  type: 'new_follower'\n}));\n\nconst unfollowers = (data.changes?.unfollowers || []).map(username => ({\n  username,\n  type: 'unfollower'\n}));\n\nconst all = [...newFollowers, ...unfollowers];\n\nif (all.length === 0) {\n  return [{ json: { skipped: true, message: 'Sin cambios' } }];\n}\n\nreturn all.map(item => ({ json: item }));"
+                "jsCode": "const data = $input.first().json;\n\nif (!data.success) {\n  return [{ json: { skipped: true, error: data.error } }];\n}\n\nconst newFollowers = (data.changes?.new_followers || []).map(username => ({\n  username,\n  type: 'new_follower'\n}));\n\nconst unfollowers = (data.changes?.unfollowers || []).map(username => ({\n  username,\n  type: 'unfollower'\n}));\n\nconst all = [...newFollowers, ...unfollowers];\n\nif (all.length === 0) {\n  return [{ json: { skipped: true, message: 'Sin cambios' } }];\n}\n\nreturn all.map(item => ({ json: item }));"
             },
-            "id": "code-1",
+            "id": "procesar-cambios",
             "name": "Procesar Cambios",
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
                 720,
-                300
+                400
             ]
         },
         {
@@ -62,12 +62,12 @@
                     },
                     "conditions": [
                         {
-                            "id": "cond1",
-                            "leftValue": "={{ $json.skipped }}",
-                            "rightValue": true,
+                            "id": "cond-new",
+                            "leftValue": "={{ $json.type }}",
+                            "rightValue": "new_follower",
                             "operator": {
-                                "type": "boolean",
-                                "operation": "notEquals"
+                                "type": "string",
+                                "operation": "equals"
                             }
                         }
                     ],
@@ -75,13 +75,13 @@
                 },
                 "options": {}
             },
-            "id": "if-1",
-            "name": "¿Hay cambios?",
+            "id": "hay-cambios",
+            "name": "¿Es nuevo seguidor?",
             "type": "n8n-nodes-base.if",
             "typeVersion": 2,
             "position": [
                 960,
-                300
+                400
             ]
         },
         {
@@ -103,13 +103,13 @@
                     ]
                 }
             },
-            "id": "nocodb-1",
+            "id": "guardar-nocodb",
             "name": "Guardar en NocoDB",
             "type": "n8n-nodes-base.nocoDb",
             "typeVersion": 3,
             "position": [
                 1200,
-                220
+                300
             ],
             "credentials": {
                 "nocoDbApiToken": {
@@ -117,6 +117,81 @@
                     "name": "NocoDB Esencia Paradise"
                 }
             }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/send-dms",
+                "sendBody": true,
+                "contentType": "json",
+                "body": {
+                    "usernames": [
+                        "={{ $json.username }}"
+                    ]
+                },
+                "options": {
+                    "timeout": 120000
+                }
+            },
+            "id": "enviar-dm",
+            "name": "Enviar DM Bienvenida",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1440,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "authentication": "nocoDbApiToken",
+                "operation": "create",
+                "projectId": "pi9kk3cdfb014m2",
+                "table": "m9o8vil7b4bsfhy",
+                "fieldsUi": {
+                    "fieldValues": [
+                        {
+                            "fieldName": "Username",
+                            "fieldValue": "={{ $json.username }}"
+                        },
+                        {
+                            "fieldName": "Type",
+                            "fieldValue": "unfollower"
+                        }
+                    ]
+                }
+            },
+            "id": "guardar-unfollower",
+            "name": "Guardar Unfollower en NocoDB",
+            "type": "n8n-nodes-base.nocoDb",
+            "typeVersion": 3,
+            "position": [
+                1200,
+                520
+            ],
+            "credentials": {
+                "nocoDbApiToken": {
+                    "id": "ixC19fw9lmi0MG9X",
+                    "name": "NocoDB Esencia Paradise"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/reset-followers",
+                "options": {}
+            },
+            "id": "reset-memoria",
+            "name": "Resetear Memoria (manual)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                240,
+                620
+            ],
+            "disabled": true,
+            "notes": "Actívalo y ejecútalo manualmente para borrar la memoria del bot (todos los seguidores serán detectados como nuevos en el siguiente scan)."
         }
     ],
     "connections": {
@@ -146,14 +221,14 @@
             "main": [
                 [
                     {
-                        "node": "¿Hay cambios?",
+                        "node": "¿Es nuevo seguidor?",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "¿Hay cambios?": {
+        "¿Es nuevo seguidor?": {
             "main": [
                 [
                     {
@@ -162,7 +237,24 @@
                         "index": 0
                     }
                 ],
-                []
+                [
+                    {
+                        "node": "Guardar Unfollower en NocoDB",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Guardar en NocoDB": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar DM Bienvenida",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
             ]
         }
     },

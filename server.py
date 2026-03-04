@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import os
 import traceback
@@ -15,14 +15,12 @@ def reset_followers():
     try:
         if os.path.exists("followers.json"):
             os.remove("followers.json")
-            return jsonify({"success": True, "message": "followers.json eliminado. El próximo scan tratará a todos como nuevos seguidores."})
-        else:
-            return jsonify({"success": True, "message": "No había followers.json que eliminar (ya estaba limpio)."})
+            return jsonify({"success": True, "message": "Memoria de seguidores eliminada. El próximo scan tratará a todos como nuevos."})
+        return jsonify({"success": True, "message": "Ya estaba limpio."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/run-bot", methods=["POST"])
-
 def execute_bot():
     try:
         print("Iniciando ejecución del bot vía API...")
@@ -31,6 +29,20 @@ def execute_bot():
         return jsonify(results)
     except Exception as e:
         print(f"Error al ejecutar el bot: {e}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/send-dms", methods=["POST"])
+def send_dms():
+    try:
+        body = request.get_json() or {}
+        usernames = body.get("usernames", [])
+        if not usernames:
+            return jsonify({"success": False, "error": "No se proporcionaron usuarios."}), 400
+        from dm_bot import run_dm_bot
+        run_dm_bot(usernames)
+        return jsonify({"success": True, "message": f"DMs enviados a {len(usernames)} usuario(s).", "usernames": usernames})
+    except Exception as e:
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
