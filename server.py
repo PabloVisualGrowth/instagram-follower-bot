@@ -10,7 +10,19 @@ CORS(app)
 def index():
     return send_from_directory("static", "index.html")
 
+@app.route("/reset-followers", methods=["POST"])
+def reset_followers():
+    try:
+        if os.path.exists("followers.json"):
+            os.remove("followers.json")
+            return jsonify({"success": True, "message": "followers.json eliminado. El próximo scan tratará a todos como nuevos seguidores."})
+        else:
+            return jsonify({"success": True, "message": "No había followers.json que eliminar (ya estaba limpio)."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/run-bot", methods=["POST"])
+
 def execute_bot():
     try:
         print("Iniciando ejecución del bot vía API...")

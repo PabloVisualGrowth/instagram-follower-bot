@@ -12,69 +12,76 @@
                     ]
                 }
             },
-            "id": "e4ed1d65-4f32-4e4b-a25e-8bea7ba9fdc4",
+            "id": "schedule-1",
             "name": "Schedule Trigger",
             "type": "n8n-nodes-base.scheduleTrigger",
             "typeVersion": 1.1,
             "position": [
-                220,
-                240
+                240,
+                300
             ]
         },
         {
             "parameters": {
                 "method": "POST",
                 "url": "https://esencia-paradise-instagram-bot.rh6pum.easypanel.host/run-bot",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "Content-Type",
-                            "value": "application/json"
-                        }
-                    ]
-                },
                 "options": {
                     "timeout": 300000
                 }
             },
-            "id": "18856277-28d1-4328-98e8-78229c7820bb",
-            "name": "Trigger Python Bot",
+            "id": "http-1",
+            "name": "Ejecutar Bot",
             "type": "n8n-nodes-base.httpRequest",
             "typeVersion": 4.1,
             "position": [
-                460,
-                240
+                480,
+                300
             ]
         },
         {
             "parameters": {
-                "httpMethod": "POST",
-                "path": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a",
-                "options": {}
+                "jsCode": "// El bot ya calculó los cambios. Solo los separamos en items individuales.\nconst data = $input.first().json;\n\nif (!data.success) {\n  return [{ json: { skipped: true, error: data.error } }];\n}\n\nconst newFollowers = (data.changes?.new_followers || []).map(username => ({\n  username,\n  type: 'new_follower'\n}));\n\nconst unfollowers = (data.changes?.unfollowers || []).map(username => ({\n  username,\n  type: 'unfollower'\n}));\n\nconst all = [...newFollowers, ...unfollowers];\n\nif (all.length === 0) {\n  return [{ json: { skipped: true, message: 'Sin cambios' } }];\n}\n\nreturn all.map(item => ({ json: item }));"
             },
-            "id": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a",
-            "name": "Webhook (Receive Data)",
-            "type": "n8n-nodes-base.webhook",
-            "typeVersion": 1,
+            "id": "code-1",
+            "name": "Procesar Cambios",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
             "position": [
-                220,
-                480
-            ],
-            "webhookId": "cbc3e68c-ef6f-4f2f-826c-baa2c10fc74a"
+                720,
+                300
+            ]
         },
         {
             "parameters": {
-                "fieldToSplitOut": "body.new_followers",
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 1
+                    },
+                    "conditions": [
+                        {
+                            "id": "cond1",
+                            "leftValue": "={{ $json.skipped }}",
+                            "rightValue": true,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "notEquals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
                 "options": {}
             },
-            "id": "item-list-split",
-            "name": "Split New Followers",
-            "type": "n8n-nodes-base.itemLists",
-            "typeVersion": 3,
+            "id": "if-1",
+            "name": "¿Hay cambios?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
             "position": [
-                460,
-                480
+                960,
+                300
             ]
         },
         {
@@ -83,19 +90,26 @@
                 "operation": "create",
                 "projectId": "pi9kk3cdfb014m2",
                 "table": "m9o8vil7b4bsfhy",
-                "columns": "username,type",
-                "data": {
-                    "username": "={{ $json.body.new_followers }}",
-                    "type": "new_follower"
+                "fieldsUi": {
+                    "fieldValues": [
+                        {
+                            "fieldName": "Username",
+                            "fieldValue": "={{ $json.username }}"
+                        },
+                        {
+                            "fieldName": "Type",
+                            "fieldValue": "={{ $json.type }}"
+                        }
+                    ]
                 }
             },
-            "id": "801fab75-4e78-4ce9-9b1a-ee6cd849ebb3",
-            "name": "NocoDB (Nuevos)",
+            "id": "nocodb-1",
+            "name": "Guardar en NocoDB",
             "type": "n8n-nodes-base.nocoDb",
             "typeVersion": 3,
             "position": [
-                700,
-                480
+                1200,
+                220
             ],
             "credentials": {
                 "nocoDbApiToken": {
@@ -105,45 +119,55 @@
             }
         }
     ],
-    "pinData": {},
     "connections": {
         "Schedule Trigger": {
             "main": [
                 [
                     {
-                        "node": "Trigger Python Bot",
+                        "node": "Ejecutar Bot",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Webhook (Receive Data)": {
+        "Ejecutar Bot": {
             "main": [
                 [
                     {
-                        "node": "Split New Followers",
+                        "node": "Procesar Cambios",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Split New Followers": {
+        "Procesar Cambios": {
             "main": [
                 [
                     {
-                        "node": "NocoDB (Nuevos)",
+                        "node": "¿Hay cambios?",
                         "type": "main",
                         "index": 0
                     }
                 ]
+            ]
+        },
+        "¿Hay cambios?": {
+            "main": [
+                [
+                    {
+                        "node": "Guardar en NocoDB",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                []
             ]
         }
     },
     "active": false,
     "settings": {
         "executionOrder": "v1"
-    },
-    "versionId": "f0ad0fa9-1e24-42b7-baec-2c13d9a56e79"
+    }
 }
